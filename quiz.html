@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Assessment - Health Resetter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quiz-container {
+            background: white;
+            border-radius: 20px;
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #047857 0%, #065f46 100%);
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .question-number {
+            color: #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 35px;
+            line-height: 1.3;
+            color: #1a1a1a;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f8f9fa;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option:hover {
+            border-color: #047857;
+            background: #ecfdf5;
+            transform: translateX(5px);
+        }
+
+        .option-icon {
+            font-size: 24px;
+            min-width: 30px;
+        }
+
+        .option-text {
+            font-size: 16px;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .back-button {
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background 0.2s;
+        }
+
+        .back-button:hover {
+            background: #d0d0d0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-container {
+                padding: 25px;
+            }
+
+            .question-text {
+                font-size: 22px;
+            }
+
+            .option {
+                padding: 15px;
+            }
+
+            .option-text {
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="question-number" id="questionNumber">Question 1 / 12</div>
+        <div class="question-text" id="questionText"></div>
+        
+        <div class="options" id="optionsContainer"></div>
+
+        <button class="back-button hidden" id="backButton" onclick="goBack()">← Back</button>
+    </div>
+
+    <script>
+        const quizData = {
+            questions: [
+                {
+                    id: 1,
+                    text: "What is your PRIMARY health concern?",
+                    options: [
+                        { icon: "💉", text: "Diabetes / High Blood Sugar", value: "diabetes" },
+                        { icon: "❤️", text: "Hypertension / High Blood Pressure", value: "hypertension" },
+                        { icon: "🌸", text: "Fibroids / Reproductive Issues", value: "fibroids" },
+                        { icon: "🦴", text: "Arthritis / Joint Pain", value: "arthritis" },
+                        { icon: "🫀", text: "Kidney / Liver Disease", value: "kidney_liver" },
+                        { icon: "⚡", text: "Cancer / Chronic Disease", value: "cancer" },
+                        { icon: "🧠", text: "Brain / Memory Issues", value: "brain" },
+                        { icon: "😴", text: "Low Energy / Weak Immunity", value: "energy" },
+                        { icon: "📋", text: "Other Condition", value: "other" }
+                    ]
+                },
+                {
+                    id: 2,
+                    text: "How long have you been dealing with this condition?",
+                    options: [
+                        { icon: "⏱️", text: "Less than 6 months (recent onset)", value: "less_6mo" },
+                        { icon: "📅", text: "6 months to 2 years", value: "6mo_2yr" },
+                        { icon: "📆", text: "2 to 5 years", value: "2_5yr" },
+                        { icon: "⌛", text: "More than 5 years", value: "more_5yr" },
+                        { icon: "⚡", text: "Started suddenly after specific event", value: "sudden" }
+                    ]
+                },
+                {
+                    id: 3,
+                    text: "Are you currently taking medication for this condition?",
+                    options: [
+                        { icon: "💊", text: "Yes, taking daily medication", value: "daily_meds" },
+                        { icon: "💉", text: "Yes, occasional medication", value: "occasional_meds" },
+                        { icon: "🌿", text: "Only herbal/natural remedies", value: "herbal_only" },
+                        { icon: "🚫", text: "No medication currently", value: "no_meds" },
+                        { icon: "⚠️", text: "Stopped medication due to side effects", value: "stopped_meds" }
+                    ]
+                },
+                {
+                    id: 4,
+                    text: "What treatments or remedies have you tried so far?",
+                    options: [
+                        { icon: "🏥", text: "Many treatments (10+), nothing works long-term", value: "many_failed" },
+                        { icon: "💸", text: "Spent lots of money, temporary relief only", value: "expensive_temp" },
+                        { icon: "🌿", text: "Focused on natural remedies and diet changes", value: "natural_focus" },
+                        { icon: "👨‍⚕️", text: "Prescription drugs from multiple doctors", value: "prescriptions" },
+                        { icon: "🙏", text: "Prayer and spiritual healing", value: "prayer" },
+                        { icon: "❓", text: "Haven't tried much yet", value: "not_much" }
+                    ]
+                },
+                {
+                    id: 5,
+                    text: "How severe are your symptoms?",
+                    options: [
+                        { icon: "🟢", text: "Mild - manageable, doesn't affect daily life much", value: "mild" },
+                        { icon: "🟡", text: "Moderate - affects some activities", value: "moderate" },
+                        { icon: "🟠", text: "Severe - significantly limits daily activities", value: "severe" },
+                        { icon: "🔴", text: "Very severe - completely disrupts my life", value: "very_severe" },
+                        { icon: "📈", text: "Getting progressively worse over time", value: "worsening" }
+                    ]
+                },
+                {
+                    id: 6,
+                    text: "When do your symptoms typically worsen?",
+                    options: [
+                        { icon: "🌅", text: "In the morning after waking up", value: "morning" },
+                        { icon: "🌃", text: "At night before sleeping", value: "night" },
+                        { icon: "🍽️", text: "After eating certain foods", value: "after_eating" },
+                        { icon: "😰", text: "During stressful situations", value: "stress" },
+                        { icon: "🏃", text: "After physical activity", value: "physical" },
+                        { icon: "🔄", text: "Constant - no specific pattern", value: "constant" }
+                    ]
+                },
+                {
+                    id: 7,
+                    text: "Do you have any secondary health issues?",
+                    options: [
+                        { icon: "✅", text: "Yes - high blood pressure", value: "yes_bp" },
+                        { icon: "✅", text: "Yes - diabetes", value: "yes_diabetes" },
+                        { icon: "✅", text: "Yes - heart problems", value: "yes_heart" },
+                        { icon: "✅", text: "Yes - multiple other conditions", value: "yes_multiple" },
+                        { icon: "❌", text: "No, just this one condition", value: "no_secondary" }
+                    ]
+                },
+                {
+                    id: 8,
+                    text: "How has this condition affected your daily life?",
+                    options: [
+                        { icon: "😢", text: "Can't work properly or earn income", value: "cant_work" },
+                        { icon: "🚶", text: "Limited mobility - can't move freely", value: "limited_mobility" },
+                        { icon: "😔", text: "Avoid social events and family gatherings", value: "avoid_social" },
+                        { icon: "💔", text: "Affects relationships and confidence", value: "relationships" },
+                        { icon: "😴", text: "Can't sleep properly", value: "sleep_issues" },
+                        { icon: "🙂", text: "Managing okay but want complete healing", value: "managing_ok" }
+                    ]
+                },
+                {
+                    id: 9,
+                    text: "What frustrates you MOST about your current treatment?",
+                    options: [
+                        { icon: "💸", text: "Costs too much money with no results", value: "expensive_no_results" },
+                        { icon: "⚠️", text: "Medication has bad side effects", value: "side_effects" },
+                        { icon: "🔄", text: "Works temporarily, then condition returns", value: "temporary_only" },
+                        { icon: "📉", text: "Condition keeps getting worse despite treatment", value: "getting_worse" },
+                        { icon: "😞", text: "Doctors say there's no cure, only management", value: "no_cure_told" },
+                        { icon: "❓", text: "Don't know what will actually work", value: "dont_know" }
+                    ]
+                },
+                {
+                    id: 10,
+                    text: "Have you tried natural or alternative remedies before?",
+                    options: [
+                        { icon: "✅", text: "Yes, and they helped somewhat", value: "yes_helped" },
+                        { icon: "❌", text: "Yes, but saw no improvement", value: "yes_no_help" },
+                        { icon: "💰", text: "Yes, wasted money on fake products", value: "yes_scammed" },
+                        { icon: "🌿", text: "Only trust conventional medicine", value: "conventional_only" },
+                        { icon: "❓", text: "No, never tried natural remedies", value: "never_tried" }
+                    ]
+                },
+                {
+                    id: 11,
+                    text: "How quickly do you need to see improvement?",
+                    options: [
+                        { icon: "⚡", text: "Urgent - within 2-4 weeks", value: "urgent" },
+                        { icon: "📅", text: "Within 1-3 months", value: "months_1_3" },
+                        { icon: "⏳", text: "Within 3-6 months", value: "months_3_6" },
+                        { icon: "🌱", text: "Willing to wait 6+ months for complete healing", value: "patient" },
+                        { icon: "🙏", text: "Just want to see ANY improvement", value: "any_improvement" }
+                    ]
+                },
+                {
+                    id: 12,
+                    text: "What would getting better mean for your life?",
+                    options: [
+                        { icon: "💼", text: "I could work and provide for my family again", value: "provide_family" },
+                        { icon: "🎉", text: "Enjoy life without pain and limitations", value: "enjoy_life" },
+                        { icon: "👨‍👩‍👧", text: "Be there for my children and loved ones", value: "be_there" },
+                        { icon: "😊", text: "Get my confidence and happiness back", value: "confidence" },
+                        { icon: "🙏", text: "Prove doctors wrong that I can heal", value: "prove_wrong" },
+                        { icon: "✨", text: "Finally feel normal and healthy again", value: "feel_normal" }
+                    ]
+                }
+            ]
+        };
+
+        let currentQuestion = 0;
+        let answers = [];
+        const selectedCategory = localStorage.getItem('selectedCategory') || 'general';
+
+        function renderQuestion() {
+            const question = quizData.questions[currentQuestion];
+            const progress = ((currentQuestion + 1) / quizData.questions.length) * 100;
+            
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('questionNumber').textContent = `Question ${currentQuestion + 1} / ${quizData.questions.length}`;
+            document.getElementById('questionText').textContent = question.text;
+            
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.onclick = () => selectOption(option.value);
+                
+                optionDiv.innerHTML = `
+                    <div class="option-icon">${option.icon}</div>
+                    <div class="option-text">${option.text}</div>
+                `;
+                
+                optionsContainer.appendChild(optionDiv);
+            });
+            
+            // Show/hide back button
+            const backButton = document.getElementById('backButton');
+            if (currentQuestion === 0) {
+                backButton.classList.add('hidden');
+            } else {
+                backButton.classList.remove('hidden');
+            }
+        }
+
+        function selectOption(value) {
+            // Store answer
+            answers[currentQuestion] = {
+                question: currentQuestion + 1,
+                value: value
+            };
+            
+            // Move to next question or finish
+            if (currentQuestion < quizData.questions.length - 1) {
+                currentQuestion++;
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function goBack() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                renderQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            // Store all quiz data
+            localStorage.setItem('quizAnswers', JSON.stringify(answers));
+            localStorage.setItem('selectedCategory', selectedCategory);
+            
+            // Redirect to analysis page
+            window.location.href = 'analysis.html';
+        }
+
+        // Initialize quiz
+        renderQuestion();
+    </script>
+
+</body>
+</html>

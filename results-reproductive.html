@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Health Diagnosis - Health Resetter</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #f8f9fa; color: #1a1a1a; line-height: 1.6; }
+        .header { background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: white; padding: 20px; text-align: center; }
+        .header-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+        .container { max-width: 900px; margin: -40px auto 0; padding: 0 20px 60px; }
+        .results-card { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 30px; }
+        .diagnosis-title { font-size: 36px; font-weight: 800; color: #1a1a1a; margin-bottom: 10px; }
+        .diagnosis-subtitle { font-size: 16px; color: #666; font-weight: 600; margin-bottom: 30px; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .metric { background: #f8f9fa; padding: 25px; border-radius: 12px; border-left: 4px solid #e91e63; }
+        .metric-label { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600; color: #666; margin-bottom: 12px; }
+        .metric-icon { font-size: 24px; }
+        .metric-value { font-size: 32px; font-weight: 800; color: #1a1a1a; margin-bottom: 8px; }
+        .metric-bar { background: #e0e0e0; height: 8px; border-radius: 10px; overflow: hidden; }
+        .metric-fill { height: 100%; border-radius: 10px; transition: width 1s ease; }
+        .metric-fill.severe { background: linear-gradient(90deg, #e91e63 0%, #c2185b 100%); }
+        .metric-fill.moderate { background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%); }
+        .section { margin-bottom: 40px; }
+        .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .section-icon { width: 40px; height: 40px; background: linear-gradient(135deg, #065f46 0%, #047857 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .section-title { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+        .section-content { font-size: 17px; line-height: 1.8; color: #333; }
+        .info-box { background: #fff3cd; border-left: 4px solid #ffc107; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .info-box h4 { font-size: 18px; margin-bottom: 10px; color: #856404; }
+        .info-box p { color: #856404; font-size: 16px; line-height: 1.7; }
+        .warning-box { background: #f8d7da; border-left: 4px solid #dc3545; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .warning-box h4 { font-size: 18px; margin-bottom: 10px; color: #721c24; }
+        .warning-box p { color: #721c24; font-size: 16px; line-height: 1.7; }
+        .timeline { display: grid; gap: 20px; margin-top: 30px; }
+        .timeline-item { display: flex; gap: 20px; }
+        .timeline-marker { min-width: 60px; height: 60px; background: linear-gradient(135deg, #065f46 0%, #047857 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 14px; text-align: center; padding: 5px; }
+        .timeline-content { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 12px; }
+        .timeline-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
+        .timeline-description { font-size: 15px; color: #555; line-height: 1.6; }
+        .product-recommendation { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 40px; border-radius: 16px; margin-top: 40px; }
+        .product-recommendation h3 { font-size: 28px; margin-bottom: 25px; text-align: center; }
+        .product-grid { display: grid; gap: 20px; }
+        .product-card { background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 25px; }
+        .product-badge { display: inline-block; background: #ffd700; color: #1a1a1a; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 15px; }
+        .product-name { font-size: 24px; font-weight: 700; margin-bottom: 10px; }
+        .product-description { font-size: 15px; opacity: 0.9; line-height: 1.6; margin-bottom: 15px; }
+        .product-features { list-style: none; margin-bottom: 20px; }
+        .product-features li { padding: 8px 0; padding-left: 25px; position: relative; font-size: 14px; opacity: 0.9; }
+        .product-features li::before { content: "✓"; position: absolute; left: 0; color: #26de81; font-weight: bold; }
+        .cta-button { background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%); color: white; padding: 18px 40px; font-size: 18px; font-weight: 700; border: none; border-radius: 50px; cursor: pointer; width: 100%; margin-top: 30px; transition: transform 0.2s, box-shadow 0.2s; text-align: center; display: block; text-decoration: none; }
+        .cta-button:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4); }
+        @media (max-width: 768px) { .results-card { padding: 25px; } .diagnosis-title { font-size: 28px; } .metrics { grid-template-columns: 1fr; } .timeline-item { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <div class="header"><div class="header-badge">🔒 Confidential Health Report</div></div>
+    <div class="container">
+        <div class="results-card">
+            <h1 class="diagnosis-title">Reproductive & Hormonal Imbalance Profile</h1>
+            <p class="diagnosis-subtitle">Medical Classification: Endocrine Disruption Syndrome</p>
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label"><span class="metric-icon">⚖️</span> Hormonal Balance</div>
+                    <div class="metric-value" id="hormonalValue">--/100</div>
+                    <div class="metric-bar"><div class="metric-fill severe" id="hormonalBar" style="width: 0%"></div></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label"><span class="metric-icon">🌸</span> Reproductive Health</div>
+                    <div class="metric-value" id="reproductiveValue">--/100</div>
+                    <div class="metric-bar"><div class="metric-fill moderate" id="reproductiveBar" style="width: 0%"></div></div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header"><div class="section-icon">📋</div><h2 class="section-title">Diagnosis Overview</h2></div>
+                <div class="section-content">
+                    <p>Fibroids, ovarian cysts, painful periods, and infertility are all symptoms of the same root problem: hormonal imbalance combined with abnormal cell growth in reproductive tissues. When estrogen dominance occurs (often caused by environmental toxins, stress, and poor liver function), your uterine and ovarian cells receive signals to grow uncontrollably - forming fibroids and cysts.</p>
+                    <p style="margin-top: 15px;">What doctors don't tell you: Surgery removes the growth, but it doesn't fix the hormonal imbalance that caused it. That's why fibroids and cysts often return after surgery. The only permanent solution is to rebalance hormones AND regenerate healthy reproductive tissue at the cellular level.</p>
+                </div>
+            </div>
+            <div class="info-box">
+                <h4>🔍 Root Cause Analysis</h4>
+                <p>Your liver is responsible for metabolizing excess estrogen. When your liver cells are sluggish or fatty, estrogen accumulates in your body - triggering fibroid growth, thickening uterine lining, and creating cysts. Additionally, oxidative stress damages the delicate cells in your ovaries and uterus, leading to painful periods and infertility.</p>
+                <p style="margin-top: 10px;"><strong>The solution:</strong> Restore liver function to clear excess estrogen. Regenerate damaged ovarian and uterine cells. Balance hormones naturally by healing the organs that produce and regulate them.</p>
+            </div>
+            <div class="warning-box">
+                <h4>⚠️ Why Surgery & Hormonal Pills Fail</h4>
+                <p><strong>The Surgery Trap:</strong> Fibroid removal (myomectomy) or cyst removal doesn't address WHY they formed. Studies show 40-60% of women develop new fibroids within 5 years post-surgery because the hormonal imbalance remains unchanged.</p>
+                <p style="margin-top: 10px;"><strong>The Birth Control Myth:</strong> Hormonal pills suppress symptoms by artificially controlling your cycle. But they don't heal damaged tissue, shrink existing fibroids, or restore natural hormone production. When you stop the pills, everything returns - often worse than before.</p>
+            </div>
+            <div class="section">
+                <div class="section-header"><div class="section-icon">📊</div><h2 class="section-title">Your 60-90 Day Healing Roadmap</h2></div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Week<br>1-3</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Hormonal Rebalancing Phase</div>
+                            <div class="timeline-description">Liver function improves, excess estrogen begins clearing. Period pain reduces by 40-60%. Bloating decreases. PMS symptoms lighten. Energy increases noticeably.</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Week<br>4-8</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Cellular Regeneration Phase</div>
+                            <div class="timeline-description">Fibroids begin shrinking measurably (ultrasound shows reduction). Ovarian cysts dissolve naturally. Menstrual cycles normalize. Fertility markers improve. Painful cramps disappear.</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Month<br>2-3</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Complete Restoration Phase</div>
+                            <div class="timeline-description">Fibroids shrink 50-80% in size (many dissolve completely). Hormones balanced naturally. Fertility restored - many women conceive naturally during this phase. Periods painless and regular. No more heavy bleeding or clots.</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Month<br>3+</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Sustained Reproductive Health</div>
+                            <div class="timeline-description">Reproductive system functioning optimally. New fibroids/cysts prevented. Natural conception possible. Surgery avoided completely. Hormonal balance maintained. Feel like yourself again.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="product-recommendation">
+            <h3>Your Personalized Healing Protocol</h3>
+            
+            <div class="product-grid">
+                <!-- PRIMARY PRODUCT - LARGE -->
+                <div class="product-card" style="border: 3px solid #ffd700; background: rgba(255,215,0,0.15); padding: 35px;">
+                    <div class="product-badge" style="background: #ffd700; font-size: 14px; padding: 8px 16px;">⭐ YOU NEED THIS - PRIMARY PROTOCOL</div>
+                    <h4 class="product-name" style="font-size: 28px;">SuperLife STC30</h4>
+                    <p class="product-description" style="font-size: 16px;">
+                        Regenerates reproductive tissue, shrinks fibroids naturally, dissolves ovarian cysts, and restores hormonal balance by healing liver and endocrine cells. Documented cases of complete fibroid dissolution and restored fertility. <strong>This is the foundation of your healing - everything else is optional.</strong>
+                    </p>
+                    <ul class="product-features">
+                        <li>Shrinks fibroids 50-80% within 90 days</li>
+                        <li>Dissolves ovarian cysts naturally</li>
+                        <li>Eliminates period pain and heavy bleeding</li>
+                        <li>Restores natural hormonal balance</li>
+                        <li>Improves fertility and egg quality</li>
+                        <li>Prevents future fibroid/cyst formation</li>
+                        <li>Works on root cause - hormonal imbalance</li>
+                    </ul>
+                    <p style="font-size: 15px; opacity: 0.9; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                        <strong>Recommended dosage:</strong> 2 boxes per month minimum for first 3 months. Reproductive healing requires sustained cellular regeneration. Take 1 sachet daily under tongue on empty stomach.
+                    </p>
+                </div>
+
+                <!-- OPTIONAL ACCELERATOR - SMALLER -->
+                <div class="product-card" style="border: 2px solid rgba(255,255,255,0.3); padding: 25px;">
+                    <div class="product-badge" style="background: #10b981;">OPTIONAL - For Faster Hormone Balance</div>
+                    <h4 class="product-name">SuperLife SCC+ (Colon Care)</h4>
+                    <p class="product-description">
+                        Add this ONLY if you want faster estrogen detox and hormonal balance. Clears excess hormones from digestive system, detoxifies liver. Works synergistically with STC30.
+                    </p>
+                    <ul class="product-features">
+                        <li>Clears excess estrogen from body</li>
+                        <li>Detoxifies liver for better hormone metabolism</li>
+                        <li>Reduces bloating and water retention</li>
+                        <li>Supports weight loss (often improves fertility)</li>
+                        <li>Prevents hormone buildup</li>
+                    </ul>
+                    <p style="font-size: 13px; opacity: 0.7; margin-top: 15px;">
+                        <strong>Note:</strong> STC30 alone will shrink your fibroids. Add SCC+ if you want faster hormonal detox.
+                    </p>
+                </div>
+            </div>
+
+            <a href="offer.html" class="cta-button" style="font-size: 20px; padding: 20px 50px;">
+                GET STC30 NOW - SHRINK FIBROIDS NATURALLY →
+            </a>
+            
+            <p style="text-align: center; margin-top: 20px; font-size: 14px; opacity: 0.7;">
+                100% Money-Back Guarantee • Shipped Worldwide • Results Within 30 Days
+            </p>
+        </div>
+    </div>
+    <script>
+        window.addEventListener('load', () => {
+            const answers = JSON.parse(localStorage.getItem('quizAnswers') || '[]');
+            const severity = answers[4]?.value || 'moderate';
+            const duration = answers[1]?.value || '2_5yr';
+            let hormonalScore = 35;
+            if (severity === 'very_severe') hormonalScore = 20;
+            else if (severity === 'severe') hormonalScore = 28;
+            else if (severity === 'moderate') hormonalScore = 35;
+            else if (severity === 'worsening') hormonalScore = 22;
+            else hormonalScore = 50;
+            if (duration === 'more_5yr') hormonalScore = Math.max(18, hormonalScore - 7);
+            let reproductiveScore = hormonalScore + 15;
+            setTimeout(() => {
+                document.getElementById('hormonalValue').textContent = hormonalScore + '/100';
+                document.getElementById('hormonalBar').style.width = hormonalScore + '%';
+                document.getElementById('reproductiveValue').textContent = reproductiveScore + '/100';
+                document.getElementById('reproductiveBar').style.width = reproductiveScore + '%';
+            }, 300);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Health Diagnosis - Health Resetter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: -40px auto 0;
+            padding: 0 20px 60px;
+        }
+
+        .results-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+
+        .diagnosis-title {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .diagnosis-subtitle {
+            font-size: 16px;
+            color: #666;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .metric {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            border-left: 4px solid #e74c3c;
+        }
+
+        .metric-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 12px;
+        }
+
+        .metric-icon {
+            font-size: 24px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .metric-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .metric-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        .metric-fill.severe {
+            background: linear-gradient(90deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .metric-fill.moderate {
+            background: linear-gradient(90deg, #f39c12 0%, #e67e22 100%);
+        }
+
+        .metric-fill.good {
+            background: linear-gradient(90deg, #27ae60 0%, #229954 100%);
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .section-content {
+            font-size: 17px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .info-box h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .info-box p {
+            color: #856404;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .warning-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .warning-box h4 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #721c24;
+        }
+
+        .warning-box p {
+            color: #721c24;
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .timeline {
+            display: grid;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+        }
+
+        .timeline-marker {
+            min-width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .timeline-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .timeline-description {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .product-recommendation {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-top: 40px;
+        }
+
+        .product-recommendation h3 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .product-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .product-card {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .product-badge {
+            display: inline-block;
+            background: #ffd700;
+            color: #1a1a1a;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .product-description {
+            font-size: 15px;
+            opacity: 0.9;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .product-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .product-features li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .product-features li::before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #26de81;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+            color: white;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(255, 71, 87, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .results-card {
+                padding: 25px;
+            }
+
+            .diagnosis-title {
+                font-size: 28px;
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline-item {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-badge">
+            🔒 Confidential Health Report
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="results-card">
+            <h1 class="diagnosis-title">Metabolic & Blood Disorder Profile</h1>
+            <p class="diagnosis-subtitle">Medical Classification: Chronic Metabolic Dysfunction</p>
+
+            <!-- Health Metrics -->
+            <div class="metrics">
+                <div class="metric">
+                    <div class="metric-label">
+                        <span class="metric-icon">📊</span>
+                        Blood Sugar Stability
+                    </div>
+                    <div class="metric-value" id="bloodSugarValue">--/100</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill severe" id="bloodSugarBar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="metric">
+                    <div class="metric-label">
+                        <span class="metric-icon">🫀</span>
+                        Vascular Health
+                    </div>
+                    <div class="metric-value" id="vascularValue">--/100</div>
+                    <div class="metric-bar">
+                        <div class="metric-fill moderate" id="vascularBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Diagnosis Overview -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">📋</div>
+                    <h2 class="section-title">Diagnosis Overview</h2>
+                </div>
+                <div class="section-content">
+                    <p>
+                        Your metabolic condition (diabetes, hypertension, or cholesterol issues) is caused by cellular dysfunction in how your body processes glucose, regulates blood pressure, and manages fat metabolism. When cells become resistant to insulin or damaged by oxidative stress, your entire metabolic system breaks down.
+                    </p>
+                    <p style="margin-top: 15px;">
+                        What most people don't understand: Your pancreas, liver, and blood vessels are made of cells. When these cells are damaged and not regenerating properly, medication can only manage symptoms - it cannot fix the broken cellular machinery that's causing the problem in the first place.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Root Cause Analysis -->
+            <div class="info-box">
+                <h4>🔍 Root Cause Analysis</h4>
+                <p>
+                    Diabetes medication forces your body to produce more insulin or makes cells temporarily more sensitive. Blood pressure medication forces blood vessels to dilate. But none of this addresses WHY your pancreatic cells stopped working properly, WHY your liver cells became fatty and dysfunctional, or WHY your blood vessel cells lost elasticity.
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>The real solution:</strong> Regenerate the damaged pancreatic beta cells, repair liver cells, restore vascular elasticity at the cellular level. When healthy new cells replace damaged ones, your body can regulate blood sugar and blood pressure naturally again - the way it was designed to.
+                </p>
+            </div>
+
+            <!-- Why Past Attempts Failed -->
+            <div class="warning-box">
+                <h4>⚠️ Why Medication Hasn't Cured You</h4>
+                <p>
+                    <strong>The Lifetime Dependency Trap:</strong> Your doctor told you this is a "chronic condition" you'll have for life. That's only true if you keep treating symptoms instead of causes. Medication manages blood sugar or blood pressure artificially - but the damaged cells keep deteriorating. That's why your dosage keeps increasing year after year.
+                </p>
+                <p style="margin-top: 10px;">
+                    <strong>The Diet & Exercise Myth:</strong> "Just eat better and exercise more." That helps - but if your pancreatic cells are already damaged, if your liver is fatty and inflamed, if your blood vessels are hardened - diet alone cannot regenerate those tissues. You need cellular repair, not just lifestyle changes.
+                </p>
+            </div>
+
+            <!-- Recovery Roadmap -->
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon">📊</div>
+                    <h2 class="section-title">Your 60-90 Day Reversal Roadmap</h2>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Week<br>1-2</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Cellular Activation Phase</div>
+                            <div class="timeline-description">
+                                Stem cells mobilize to damaged pancreas, liver, and blood vessels. Blood sugar levels begin stabilizing. Energy increases noticeably. Morning fatigue reduces. First signs of cellular repair.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Week<br>3-6</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Metabolic Reset Phase</div>
+                            <div class="timeline-description">
+                                Pancreatic beta cells begin regenerating. Insulin sensitivity improves 30-50%. Blood pressure stabilizes. Medication dosage can often be reduced (consult doctor). Blood tests show improvement.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Month<br>2-3</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Deep Repair Phase</div>
+                            <div class="timeline-description">
+                                HbA1c levels drop significantly (diabetics). Blood pressure normalized without medication (many cases). Liver fat reduces measurably. Cholesterol improves. Energy levels return to normal. Weight loss occurs naturally.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <div class="timeline-marker">Month<br>3+</div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">Complete Metabolic Restoration</div>
+                            <div class="timeline-description">
+                                Many people achieve medication-free status (under medical supervision). Pancreas function restored 70-90%. Blood sugar regulation normal. Vascular health restored. Risk of complications (kidney damage, blindness, amputation) eliminated. Feel 10-20 years younger.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Recommendations -->
+        <div class="product-recommendation">
+            <h3>Your Personalized Healing Protocol</h3>
+            
+            <div class="product-grid">
+                <!-- PRIMARY PRODUCT - LARGE -->
+                <div class="product-card" style="border: 3px solid #ffd700; background: rgba(255,215,0,0.15); padding: 35px;">
+                    <div class="product-badge" style="background: #ffd700; font-size: 14px; padding: 8px 16px;">⭐ YOU NEED THIS - PRIMARY PROTOCOL</div>
+                    <h4 class="product-name" style="font-size: 28px;">SuperLife STC30</h4>
+                    <p class="product-description" style="font-size: 16px;">
+                        Activates stem cells to regenerate pancreatic beta cells, repair liver tissue, and restore vascular function. Documented cases of complete diabetes reversal and blood pressure normalization. <strong>This is the foundation of your healing - everything else is optional.</strong>
+                    </p>
+                    <ul class="product-features">
+                        <li>Regenerates insulin-producing pancreatic cells</li>
+                        <li>Repairs fatty liver and restores liver function</li>
+                        <li>Restores blood vessel elasticity and health</li>
+                        <li>Reduces HbA1c by 2-4 points within 90 days (diabetics)</li>
+                        <li>Lowers blood pressure naturally without medication</li>
+                        <li>Proven safe for long-term use with existing medication</li>
+                        <li>Reverses metabolic syndrome completely</li>
+                    </ul>
+                    <p style="font-size: 15px; opacity: 0.9; margin-top: 15px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+                        <strong>Critical dosage:</strong> 2 boxes per month for first 3 months (minimum). Metabolic conditions require sustained cellular regeneration. Take 1 sachet daily under tongue on empty stomach.
+                    </p>
+                </div>
+
+                <!-- OPTIONAL ACCELERATOR - SMALLER -->
+                <div class="product-card" style="border: 2px solid rgba(255,255,255,0.3); padding: 25px;">
+                    <div class="product-badge" style="background: #10b981;">OPTIONAL - For Faster Weight Loss</div>
+                    <h4 class="product-name">SuperLife SCC+ (Colon Care)</h4>
+                    <p class="product-description">
+                        Add this ONLY if you want accelerated weight loss and liver detox. Burns visceral fat and improves insulin sensitivity by 40%. Works synergistically with STC30.
+                    </p>
+                    <ul class="product-features">
+                        <li>Burns visceral fat (most dangerous type)</li>
+                        <li>Improves insulin sensitivity by 40%</li>
+                        <li>Detoxifies liver and digestive system</li>
+                        <li>Accelerates weight loss naturally</li>
+                        <li>Reduces blood sugar spikes after meals</li>
+                    </ul>
+                    <p style="font-size: 13px; opacity: 0.7; margin-top: 15px;">
+                        <strong>Note:</strong> STC30 alone will reverse your diabetes. Add SCC+ if you want faster weight loss results.
+                    </p>
+                </div>
+            </div>
+
+            <a href="offer.html" class="cta-button" style="font-size: 20px; padding: 20px 50px;">
+                GET STC30 NOW - START REVERSING DIABETES TODAY →
+            </a>
+            
+            <p style="text-align: center; margin-top: 20px; font-size: 14px; opacity: 0.7;">
+                100% Money-Back Guarantee • Shipped Worldwide • Results Within 30 Days
+            </p>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => {
+            const answers = JSON.parse(localStorage.getItem('quizAnswers') || '[]');
+            
+            const severity = answers[4]?.value || 'moderate';
+            const duration = answers[1]?.value || '2_5yr';
+            
+            let bloodSugarScore = 35;
+            if (severity === 'very_severe') bloodSugarScore = 18;
+            else if (severity === 'severe') bloodSugarScore = 25;
+            else if (severity === 'moderate') bloodSugarScore = 35;
+            else if (severity === 'worsening') bloodSugarScore = 20;
+            else bloodSugarScore = 50;
+            
+            if (duration === 'more_5yr') bloodSugarScore = Math.max(15, bloodSugarScore - 8);
+            
+            let vascularScore = bloodSugarScore + 20;
+            if (duration === 'more_5yr') vascularScore = Math.max(30, vascularScore - 10);
+            
+            setTimeout(() => {
+                document.getElementById('bloodSugarValue').textContent = bloodSugarScore + '/100';
+                document.getElementById('bloodSugarBar').style.width = bloodSugarScore + '%';
+                
+                document.getElementById('vascularValue').textContent = vascularScore + '/100';
+                document.getElementById('vascularBar').style.width = vascularScore + '%';
+            }, 300);
+        });
+    </script>
+
+</body>
+</html>
